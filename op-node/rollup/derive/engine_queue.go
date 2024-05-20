@@ -623,9 +623,15 @@ func (eq *EngineQueue) forceNextSafeAttributes(ctx context.Context) error {
 		return nil
 	}
 	attrs := eq.safeAttributes.attributes
+	start := time.Now()
+
+	var confirmPayloadOut *eth.ExecutionPayload
 	errType, err := eq.StartPayload(ctx, eq.safeHead, attrs, true)
 	if err == nil {
-		_, errType, err = eq.ConfirmPayload(ctx)
+		confirmPayloadOut, errType, err = eq.ConfirmPayload(ctx)
+		if confirmPayloadOut != nil {
+			eq.log.Info("confirm payload success", "block", fmt.Sprintf("%d", uint64(confirmPayloadOut.BlockNumber)), "gasUsed", fmt.Sprintf("%d", uint64(confirmPayloadOut.GasUsed)), "mgasps", float64(confirmPayloadOut.GasUsed*1000)/float64(time.Since(start)/time.Nanosecond))
+		}
 	}
 	if err != nil {
 		switch errType {
