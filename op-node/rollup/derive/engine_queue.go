@@ -630,7 +630,7 @@ func (eq *EngineQueue) forceNextSafeAttributes(ctx context.Context) error {
 	if err == nil {
 		confirmPayloadOut, errType, err = eq.ConfirmPayload(ctx)
 		if confirmPayloadOut != nil {
-			eq.log.Info("confirm payload success", "block", fmt.Sprintf("%d", uint64(confirmPayloadOut.BlockNumber)), "gasUsed", fmt.Sprintf("%d", uint64(confirmPayloadOut.GasUsed)), "mgasps", float64(confirmPayloadOut.GasUsed*1000)/float64(time.Since(start)/time.Nanosecond))
+			eq.log.Info("confirm payload success", "block", fmt.Sprintf("%d", uint64(confirmPayloadOut.BlockNumber)), "gasUsed", fmt.Sprintf("%d", uint64(confirmPayloadOut.GasUsed)), "timecost", float64(time.Since(start)/time.Millisecond), "mgasps", float64(confirmPayloadOut.GasUsed*1000)/float64(time.Since(start)/time.Nanosecond))
 		}
 	}
 	if err != nil {
