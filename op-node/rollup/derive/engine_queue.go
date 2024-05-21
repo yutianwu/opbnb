@@ -498,7 +498,9 @@ func (eq *EngineQueue) tryNextUnsafePayload(ctx context.Context) error {
 		return nil
 	}
 
+	start := time.Now()
 	status, err := eq.engine.NewPayload(ctx, first)
+	eq.metrics.RecordSequencerStepTime("newPayloadUnsafe", time.Since(start))
 	if err != nil {
 		return NewTemporaryError(fmt.Errorf("failed to update insert payload: %w", err))
 	}
@@ -514,7 +516,10 @@ func (eq *EngineQueue) tryNextUnsafePayload(ctx context.Context) error {
 		SafeBlockHash:      eq.safeHead.Hash, // this should guarantee we do not reorg past the safe head
 		FinalizedBlockHash: eq.finalized.Hash,
 	}
+
+	start = time.Now()
 	fcRes, err := eq.engine.ForkchoiceUpdate(ctx, &fc, nil)
+	eq.metrics.RecordSequencerStepTime("forkChoiceUpdateHeadsUnsafe", time.Since(start))
 	if err != nil {
 		var inputErr eth.InputError
 		if errors.As(err, &inputErr) {
@@ -688,7 +693,7 @@ func (eq *EngineQueue) StartPayload(ctx context.Context, parent eth.L2BlockRef, 
 		SafeBlockHash:      eq.safeHead.Hash,
 		FinalizedBlockHash: eq.finalized.Hash,
 	}
-	id, errTyp, err := StartPayload(ctx, eq.engine, fc, attrs)
+	id, errTyp, err := StartPayload(ctx, eq.engine, fc, attrs, eq.metrics)
 	if err != nil {
 		return errTyp, err
 	}

@@ -82,8 +82,11 @@ const (
 
 // StartPayload starts an execution payload building process in the provided Engine, with the given attributes.
 // The severity of the error is distinguished to determine whether the same payload attributes may be re-attempted later.
-func StartPayload(ctx context.Context, eng Engine, fc eth.ForkchoiceState, attrs *eth.PayloadAttributes) (id eth.PayloadID, errType BlockInsertionErrType, err error) {
+func StartPayload(ctx context.Context, eng Engine, fc eth.ForkchoiceState, attrs *eth.PayloadAttributes, metrics Metrics) (id eth.PayloadID, errType BlockInsertionErrType, err error) {
+	start := time.Now()
 	fcRes, err := eng.ForkchoiceUpdate(ctx, &fc, attrs)
+	metrics.RecordSequencerStepTime("forkChoiceUpdateStartPayload", time.Since(start))
+
 	if err != nil {
 		var inputErr eth.InputError
 		if errors.As(err, &inputErr) {
