@@ -523,6 +523,7 @@ func (eq *EngineQueue) tryNextUnsafePayload(ctx context.Context) error {
 		return nil
 	}
 
+	start := time.Now()
 	if err := eq.ec.InsertUnsafePayload(ctx, firstEnvelope, ref); errors.Is(err, ErrTemporary) {
 		eq.log.Debug("Temporary error while inserting unsafe payload", "hash", ref.Hash, "number", ref.Number, "timestamp", ref.Time, "l1Origin", ref.L1Origin)
 		return err
@@ -532,7 +533,7 @@ func (eq *EngineQueue) tryNextUnsafePayload(ctx context.Context) error {
 		return err
 	}
 	eq.unsafePayloads.Pop()
-	eq.log.Trace("Executed unsafe payload", "hash", ref.Hash, "number", ref.Number, "timestamp", ref.Time, "l1Origin", ref.L1Origin)
+	eq.log.Info("Executed unsafe payload", "hash", ref.Hash, "number", ref.Number, "timestamp", ref.Time, "l1Origin", ref.L1Origin, "gasUsed", first.GasUsed, "timecost", time.Since(start).Milliseconds(), "mgasps", float64(first.GasUsed*1000)/float64(time.Since(start).Nanoseconds()))
 	eq.logSyncProgress("unsafe payload from sequencer")
 
 	return nil
